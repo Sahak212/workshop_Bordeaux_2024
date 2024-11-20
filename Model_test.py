@@ -75,13 +75,13 @@ def filter(modeled_data, experiment_data):
         output.append(modeled_data[index])
     return output
 
-
+State_index = [C_H2_M, X_H2_gX, X_Prop_gX, C_CO2_M, C_propionate_M, C_CH4_M, C_H2_gas_M, C_CH4_gas_M, C_CO2_gas_M, Dead_Biomass, C_acetate_M]
+Id = {s: ID_s for ID_s, s in enumerate(State_index)}
 
 # ================================================
 # Main function to realize the model
 # ================================================
 
-#def integral(X_H2_gX_p, X_Prop_gX_p, qs_max_H2_p, Ks_H2_p, qs_max_Prop_p, Ks_Prop_p, Ki_Prop_p):
 def integral(param):
     # optimizable parameters for reaction kinetics
     qs_max_H2 = param[2]  # maximum substrate uptake rate of hydrogenotrophs
@@ -100,7 +100,7 @@ def integral(param):
     K_H_h2 = 7.8 * 10 ** -4 * numpy.exp(-4180 / (100 * initial_parameter['R']) * (
                 1 / initial_parameter['Temperature_0'] - 1 / initial_parameter[
             'Temperature_ex']))  # Mliq.bar^-1 #7.38*10^-4
-    K_H_ch4 = 0.0014 * numpy.exp((-14240 / (100 * initial_parameter['R'])) * (
+    K_H_CH4 = 0.0014 * numpy.exp((-14240 / (100 * initial_parameter['R'])) * (
                 1 / initial_parameter['Temperature_0'] - 1 / initial_parameter[
             'Temperature_ex']))  # Mliq.bar^-1 #0.00116
     K_H_co2 = 0.035 * numpy.exp((-19410 / (100 * initial_parameter['R'])) * (
@@ -122,17 +122,17 @@ def integral(param):
 
     def model(state_zero, t):
 
-        C_H2_M = state_zero[0]  # initial hydrogen concentration in liquid in mol/l
-        X_H2_gX = state_zero[1]  # initial biomass concentration of hydrogenotrophs in gX/mol(hydrogen)
-        X_Prop_gX = state_zero[2]  # initial biomass concentration of acetate oxidizers in gX/mol(acetate)
-        C_CO2_M = state_zero[3]  # initial concentration of CO2 in the liquid mol/l
-        C_propionate_M = state_zero[4]  # initial concentration of acetate mol/l
-        C_Ch4_M = state_zero[5]  # initial concentraiton of CH4 in the liquid mol/l
-        C_H2_gas_M = state_zero[6]  # hydrogen gas concentration in the headspace mol/l
-        C_CH4_gas_M = state_zero[7]  # CH4 gas concentration in the headspace mol/l
-        C_CO2_gas_M = state_zero[8]  # CO2 gas concentration in the headspace mol/l
-        Dead_Biomass = state_zero[9]# initial total dead biomass is assumed to be zero
-        C_Ac_M = state_zero[10]
+        C_H2_M = state_zero[Id['C_H2_M']]  # initial hydrogen concentration in liquid in mol/l
+        X_H2_gX = state_zero[Id['X_H2_gX']]  # initial biomass concentration of hydrogenotrophs in gX/mol(hydrogen)
+        X_Prop_gX = state_zero[Id['X_Prop_gX']]  # initial biomass concentration of acetate oxidizers in gX/mol(acetate)
+        C_CO2_M = state_zero[Id['C_CO2_M']]  # initial concentration of CO2 in the liquid mol/l
+        C_propionate_M = state_zero[Id['C_propionate_M']]  # initial concentration of acetate mol/l
+        C_CH4_M = state_zero[Id['C_CH4_M']]  # initial concentraiton of CH4 in the liquid mol/l
+        C_H2_gas_M = state_zero[Id['C_H2_gas_M']]  # hydrogen gas concentration in the headspace mol/l
+        C_CH4_gas_M = state_zero[Id['C_CH4_gas_M']]  # CH4 gas concentration in the headspace mol/l
+        C_CO2_gas_M = state_zero[Id['C_CO2_gas_M']]  # CO2 gas concentration in the headspace mol/l
+        Dead_Biomass = state_zero[Id['Dead_Biomass']]# initial total dead biomass is assumed to be zero
+        C_acetate_M = state_zero[Id['C_acetate_M']]
         # estimation of N2 partial pressure in the headspace.
         # As headspace was flushed with N2, then the difference between sum of main gases and total pressure with help to estimate N2 partial pressure
         #        PP_gas_N2 = initial_parameter['inititla_total_pressure'] - (initial_parameter['CO2_patial_pressure'] + initial_parameter['H2_partial_pressure'] + initial_parameter['CH4_partial_pressure'] + initial_parameter['CO_partial_pressure']) # total head space total pressure at starting point is 1.72 bar: 80% N2 and 20% CO2
@@ -155,7 +155,7 @@ def integral(param):
 
         # gas-liquid mass transfer rate, based on Henry's law. 16 and 64 are COD equivalents of the H2 and CH4 respectivly
         Rho_T_H2 = (k_L_a * (C_H2_M - K_H_h2 * PP_gas_H2))
-        Rho_T_CH4 = (k_L_a * (C_Ch4_M - K_H_ch4 * PP_gas_CH4))
+        Rho_T_CH4 = (k_L_a * (C_CH4_M - K_H_CH4 * PP_gas_CH4))
         Rho_T_CO2 = (k_L_a * ((C_CO2_M) - K_H_co2 * PP_gas_CO2))
 
         # Differential equation
@@ -169,8 +169,7 @@ def integral(param):
 
         dXPropdt = v_X_Prop * rho_Prop - rho_d_Prop  # acetate oxidizer biomass change
 
-        dCO2dt = (
-                              v_CO2_Prop * rho_Prop - v_CO2_h * rho_H2 - Rho_T_CO2)  # CO2 concentration change in the liquid. Beside gas-liquid mass transfer there is also dissociation to bicabonate
+        dCO2dt = (v_CO2_Prop * rho_Prop - v_CO2_h * rho_H2 - Rho_T_CO2)  # CO2 concentration change in the liquid. Beside gas-liquid mass transfer there is also dissociation to bicabonate
 
         dCH4dt = v_CH4_h * rho_H2 - Rho_T_CH4  # methane concentration change in the liquid
 
@@ -193,7 +192,7 @@ def integral(param):
                             X_Prop_gX=param[1],
                             C_CO2_M=initial_parameter['CO2_patial_pressure'] * K_H_co2,
                             C_propionate_M=initial_parameter['Propionate_M'],
-                            C_CH4_M=initial_parameter['CH4_partial_pressure'] * K_H_ch4,
+                            C_CH4_M=initial_parameter['CH4_partial_pressure'] * K_H_CH4,
                             C_H2_gas_M=initial_parameter['H2_partial_pressure'] / (
                                         initial_parameter['R'] * initial_parameter['Temperature_ex']),
                             # calculate concentration of gases from bar -> mol/l assuming gases behave as ideal gases
@@ -203,9 +202,10 @@ def integral(param):
                                         initial_parameter['R'] * initial_parameter['Temperature_ex']),
                             Dead_Biomass = 0,
                             C_acetate_M = initial_parameter['Acetate_M'])
-
-    # solve differential equations
-    solution = odeint(model, list(starting_values.values()), time_series)  # with parameter tcrit critical point is set, where integration care should be taken. This is the time point where gas was released from headspace.
+  
+    # solve differential equation
+    starting_values_array = np.array([starting_values[k] for k in State_index])
+    solution = odeint(model, starting_values_array, time_series)  # with parameter tcrit critical point is set, where integration care should be taken. This is the time point where gas was released from headspace.
 
     # produce output of whole model in pandas dataframe for ease of use later
     output = dict(Hydrogen=[], Biomass_HO=[], Biomass_PO=[], CO2=[], Propionate=[], CH4=[],
