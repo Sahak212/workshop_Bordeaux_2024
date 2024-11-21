@@ -204,7 +204,7 @@ def integral(param):
                             C_acetate_M = initial_parameter['Acetate_M'])
   
     # solve differential equation
-    starting_values_array = np.array([starting_values[k] for k in State_index])
+    starting_values_array = numpy.array([starting_values[k] for k in State_index])
     solution = odeint(model, starting_values_array, time_series)  # with parameter tcrit critical point is set, where integration care should be taken. This is the time point where gas was released from headspace.
 
     # produce output of whole model in pandas dataframe for ease of use later
