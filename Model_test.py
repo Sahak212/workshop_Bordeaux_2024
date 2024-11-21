@@ -75,7 +75,7 @@ def filter(modeled_data, experiment_data):
         output.append(modeled_data[index])
     return output
 
-State_index = [C_H2_M, X_H2_gX, X_Prop_gX, C_CO2_M, C_propionate_M, C_CH4_M, C_H2_gas_M, C_CH4_gas_M, C_CO2_gas_M, Dead_Biomass, C_acetate_M]
+State_index = ['C_H2_M', 'X_H2_gX', 'X_Prop_gX', 'C_CO2_M', 'C_propionate_M', 'C_CH4_M', 'C_H2_gas_M', 'C_CH4_gas_M', 'C_CO2_gas_M', 'Dead_Biomass', 'C_acetate_M']
 Id = {s: ID_s for ID_s, s in enumerate(State_index)}
 
 # ================================================
